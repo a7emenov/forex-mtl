@@ -1,11 +1,10 @@
 import Dependencies._
+import sbt.Keys.version
 
-name := "forex"
-version := "1.0.1"
+ThisBuild / resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-scalaVersion := "2.12.10"
-scalacOptions ++= Seq(
- "-deprecation",
+ThisBuild / scalacOptions ++= Seq(
+  "-deprecation",
   "-encoding",
   "UTF-8",
   "-feature",
@@ -27,25 +26,34 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"
 )
 
-resolvers +=
-  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
-
-libraryDependencies ++= Seq(
-  compilerPlugin(Libraries.kindProjector),
-  Libraries.cats,
-  Libraries.catsEffect,
-  Libraries.fs2,
-  Libraries.http4sDsl,
-  Libraries.http4sServer,
-  Libraries.http4sCirce,
-  Libraries.circeCore,
-  Libraries.circeGeneric,
-  Libraries.circeGenericExt,
-  Libraries.circeParser,
-  Libraries.circeJava8,
-  Libraries.pureConfig,
-  Libraries.logback,
-  Libraries.scalaTest        % Test,
-  Libraries.scalaCheck       % Test,
-  Libraries.catsScalaCheck   % Test
-)
+val forex = (project in file("."))
+  .settings(
+    name := "forex",
+    version := "1.0.1",
+    scalaVersion := "2.12.10",
+    addCompilerPlugin(Libraries.kindProjector)
+  ).settings(
+    // Project dependencies
+    libraryDependencies ++= Seq(
+      Libraries.cats,
+      Libraries.catsEffect,
+      Libraries.fs2,
+      Libraries.http4sDsl,
+      Libraries.http4sServer,
+      Libraries.http4sCirce,
+      Libraries.circeCore,
+      Libraries.circeGeneric,
+      Libraries.circeGenericExt,
+      Libraries.circeParser,
+      Libraries.circeJava8,
+      Libraries.pureConfig,
+      Libraries.logback
+    )
+  ).settings(
+    // Test dependencies
+    libraryDependencies ++= Seq(
+      Libraries.scalaTest,
+      Libraries.scalaCheck,
+      Libraries.catsScalaCheck
+    ).map(_ % Test)
+  )
