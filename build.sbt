@@ -40,6 +40,7 @@ val forex = (project in file("."))
       Libraries.fs2,
       Libraries.http4sDsl,
       Libraries.http4sServer,
+      Libraries.http4sClient,
       Libraries.http4sCirce,
       Libraries.circeCore,
       Libraries.circeGeneric,
@@ -47,6 +48,7 @@ val forex = (project in file("."))
       Libraries.circeParser,
       Libraries.circeJava8,
       Libraries.pureConfig,
+      Libraries.enumeratum,
       Libraries.logback
     )
   ).settings(

@@ -2,27 +2,29 @@ package forex
 
 import cats.effect._
 import cats.syntax.functor._
+import cats.syntax.flatMap._
 import forex.config._
-import fs2.Stream
-import org.http4s.server.blaze.BlazeServerBuilder
+
+import scala.concurrent.ExecutionContext
 
 object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] =
-    new Application[IO].stream.compile.drain.as(ExitCode.Success)
+    new Application[IO].run.as(ExitCode.Success)
 
 }
 
 class Application[F[_]: ConcurrentEffect: Timer] {
 
-  def stream: Stream[F, Unit] =
+  private val httpClientEc = ExecutionContext.global
+
+  def run: F[Unit] =
     for {
-      config <- Config.stream("app")
-      module = new Module[F](config)
-      _ <- BlazeServerBuilder[F]
-            .bindHttp(config.api.port, config.api.host)
-            .withHttpApp(module.httpApp)
-            .serve
+      config <- Config.load[F]("app")
+      ratesServiceResource = new RatesModule[F](config.oneFrame, httpClientEc).serviceResource
+      _ <- ratesServiceResource.use { ratesProgram =>
+        new ApiModule[F](config.api, ratesProgram).startServer.compile.drain
+      }
     } yield ()
 
 }

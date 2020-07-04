@@ -1,10 +1,12 @@
 package forex.domain
 
-import cats.Show
+import enumeratum._
 
-sealed trait Currency
+import scala.collection.immutable
 
-object Currency {
+sealed trait Currency extends EnumEntry
+
+object Currency extends Enum[Currency] with CatsEnum[Currency] {
   case object AUD extends Currency
   case object CAD extends Currency
   case object CHF extends Currency
@@ -15,28 +17,5 @@ object Currency {
   case object SGD extends Currency
   case object USD extends Currency
 
-  implicit val show: Show[Currency] = Show.show {
-    case AUD => "AUD"
-    case CAD => "CAD"
-    case CHF => "CHF"
-    case EUR => "EUR"
-    case GBP => "GBP"
-    case NZD => "NZD"
-    case JPY => "JPY"
-    case SGD => "SGD"
-    case USD => "USD"
-  }
-
-  def fromString(s: String): Currency = s.toUpperCase match {
-    case "AUD" => AUD
-    case "CAD" => CAD
-    case "CHF" => CHF
-    case "EUR" => EUR
-    case "GBP" => GBP
-    case "NZD" => NZD
-    case "JPY" => JPY
-    case "SGD" => SGD
-    case "USD" => USD
-  }
-
+  override val values: immutable.IndexedSeq[Currency] = findValues
 }
