@@ -27,7 +27,7 @@ class Module[F[_]: Concurrent: Timer](config: ApplicationConfig) {
   }
 
   private val appMiddleware: TotalMiddleware = { http: HttpApp[F] =>
-    Timeout(config.http.timeout)(http)
+    Timeout(config.api.timeout)(http)
   }
 
   private val http: HttpRoutes[F] = ratesHttpRoutes
