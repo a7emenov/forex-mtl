@@ -7,7 +7,7 @@ import io.circe.{ Decoder, Encoder }
 import org.http4s.{ EntityDecoder, EntityEncoder }
 import org.http4s.circe._
 
-package object http {
+package object api {
 
   implicit def valueClassEncoder[A: UnwrappedEncoder]: Encoder[A] = implicitly
   implicit def valueClassDecoder[A: UnwrappedDecoder]: Decoder[A] = implicitly

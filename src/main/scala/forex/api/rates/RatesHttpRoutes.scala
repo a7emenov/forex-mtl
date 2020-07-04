@@ -1,4 +1,4 @@
-package forex.http
+package forex.api
 package rates
 
 import cats.effect.Sync
@@ -13,7 +13,7 @@ class RatesHttpRoutes[F[_]: Sync](rates: RatesProgram[F]) extends Http4sDsl[F] {
 
   import Converters._, QueryParams._, Protocol._
 
-  private[http] val prefixPath = "/rates"
+  private[api] val prefixPath = "/rates"
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root :? FromQueryParam(from) +& ToQueryParam(to) =>

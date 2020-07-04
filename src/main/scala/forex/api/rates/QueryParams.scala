@@ -1,4 +1,4 @@
-package forex.http.rates
+package forex.api.rates
 
 import forex.domain.Currency
 import org.http4s.QueryParamDecoder
@@ -6,7 +6,7 @@ import org.http4s.dsl.impl.QueryParamDecoderMatcher
 
 object QueryParams {
 
-  private[http] implicit val currencyQueryParam: QueryParamDecoder[Currency] =
+  private[api] implicit val currencyQueryParam: QueryParamDecoder[Currency] =
     QueryParamDecoder[String].map(Currency.fromString)
 
   object FromQueryParam extends QueryParamDecoderMatcher[Currency]("from")

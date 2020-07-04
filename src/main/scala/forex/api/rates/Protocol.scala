@@ -1,4 +1,4 @@
-package forex.http
+package forex.api
 package rates
 
 import forex.domain.Currency.show
