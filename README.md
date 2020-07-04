@@ -21,3 +21,7 @@ If Forex-mtl is to send exchange rates requests individually for each currency (
 rates it would require 72 requests (`8 + 7 + ... + 0` for `A => B` and the same number for the inverses) at least every 10
 minutes, accounting for 10368 daily requests in total. Therefore, it order to uphold the SLA it is assumed that getting
 all exchange rates data through a single request will not cause significant delays or errors from open-frame API.
+
+4. **Forex-mtl has only one instance for each access key.**
+For simplicity it is assumed that each application acts individually, without having to share the request quota with
+other instances.
