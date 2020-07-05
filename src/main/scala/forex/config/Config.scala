@@ -1,7 +1,9 @@
 package forex.config
 
 import cats.effect.Sync
-import pureconfig.{CamelCase, ConfigFieldMapping, ConfigSource}
+import org.http4s.Uri
+import pureconfig.error.CannotConvert
+import pureconfig.{CamelCase, ConfigFieldMapping, ConfigReader, ConfigSource}
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
 
@@ -13,6 +15,9 @@ object Config {
       useDefaultArgs = true,
       allowUnknownKeys = false
     )
+
+  implicit val uriReader: ConfigReader[Uri] =
+    ConfigReader[String].emap(s => Uri.fromString(s).left.map(e => CannotConvert(s, "org.http4s.Uri", e.sanitized)))
 
 
   /**

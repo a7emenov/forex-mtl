@@ -5,7 +5,7 @@ import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.syntax.flatMap._
 import cats.syntax.functor._
-import forex.config.OneFrameConfig
+import forex.config.RatesConfig
 import forex.domain.{Currency, Rate}
 import forex.services.rates.errors.Error.RateNotAvailable
 import org.http4s.circe.CirceInstances
@@ -40,26 +40,25 @@ private[rates] object OneFrameModule {
 
   private def synchronousCacheUpdates[F[_]: Sync : Timer](cache: Ref[F, Map[Rate.Currencies, Rate]],
                                                           oneFrameApi: OneFrameApi[F],
-                                                          queryInterval: FiniteDuration): F[Unit] = {
+                                                          refreshInterval: FiniteDuration): F[Unit] = {
     for {
       _ <- updateCache(cache, oneFrameApi)
-      _ <- Timer[F].sleep(queryInterval)
-      result <- synchronousCacheUpdates(cache, oneFrameApi, queryInterval)
+      _ <- Timer[F].sleep(refreshInterval)
+      result <- synchronousCacheUpdates(cache, oneFrameApi, refreshInterval)
     } yield result
   }
 
-  def create[F[_]: Concurrent : Timer](config: OneFrameConfig,
+  def create[F[_]: Concurrent : Timer](config: RatesConfig,
                                        httpClient: Client[F]): F[OneFrameModule[F]] =
     for {
       cache <- Ref.of(Map.empty[Rate.Currencies, Rate])
-      oneFrameApi = new OneFrameApi[F](config, httpClient)
-      _ <- Concurrent[F].start(synchronousCacheUpdates(cache, oneFrameApi, config.queryInterval))
-      module = new OneFrameModule(config, cache)
+      oneFrameApi = new OneFrameApi[F](config.oneFrameApi, httpClient)
+      _ <- Concurrent[F].start(synchronousCacheUpdates(cache, oneFrameApi, config.cache.refreshInterval))
+      module = new OneFrameModule(cache)
     } yield module
 }
 
-private[rates] class OneFrameModule[F[_]: Sync](config: OneFrameConfig,
-                                                cache: Ref[F, Map[Rate.Currencies, Rate]]) extends Algebra[F] with CirceInstances {
+private[rates] class OneFrameModule[F[_]: Sync](cache: Ref[F, Map[Rate.Currencies, Rate]]) extends Algebra[F] with CirceInstances {
 
   override def get(currencies: Rate.Currencies): F[Either[errors.Error, Rate]] =
     for {

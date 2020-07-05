@@ -21,7 +21,7 @@ class Application[F[_]: ConcurrentEffect: Timer] {
   def run: F[Unit] =
     for {
       config <- Config.load[F]("app")
-      ratesServiceResource = new RatesModule[F](config.oneFrame, httpClientEc).serviceResource
+      ratesServiceResource = new RatesModule[F](config.rates, httpClientEc).serviceResource
       _ <- ratesServiceResource.use { ratesProgram =>
         new ApiModule[F](config.api, ratesProgram).startServer.compile.drain
       }

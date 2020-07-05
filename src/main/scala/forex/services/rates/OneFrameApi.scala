@@ -7,7 +7,7 @@ import cats.effect.Sync
 import cats.syntax.applicativeError._
 import cats.syntax.functor._
 import cats.syntax.show._
-import forex.config.OneFrameConfig
+import forex.config.OneFrameApiConfig
 import forex.domain.{Currency, Price, Rate, Timestamp}
 import forex.services.rates.OneFrameApi.OneFrameExchangeRate
 import forex.services.rates.errors.Error.OneFrameApiError
@@ -28,16 +28,14 @@ private[rates] object OneFrameApi {
                                           time_stamp: String)
 }
 
-private[rates] class OneFrameApi[F[_]: Sync](config: OneFrameConfig,
+private[rates] class OneFrameApi[F[_]: Sync](config: OneFrameApiConfig,
                                              httpClient: Client[F]) extends CirceInstances {
 
   private implicit val entityDecoder: EntityDecoder[F, List[OneFrameExchangeRate]] =
     accumulatingJsonOf
 
-  private val baseUrl = Uri.unsafeFromString(config.url.toExternalForm)
-
   private def requestUri(currencies: NonEmptyList[Rate.Currencies]): Uri =
-    baseUrl.withQueryParam("pair", currencies.map(c => s"${c.from.show}${c.to.show}").toList)
+    config.url.withQueryParam("pair", currencies.map(c => s"${c.from.show}${c.to.show}").toList)
 
   private def request(currencies: NonEmptyList[Rate.Currencies]): Request[F] =
     Request[F](uri = requestUri(currencies), headers = Headers.of(Header("token", config.accessToken)))
