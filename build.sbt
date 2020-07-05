@@ -27,13 +27,23 @@ ThisBuild / scalacOptions ++= Seq(
 )
 
 val forex = (project in file("."))
+  // General settings
   .settings(
-    name := "forex",
-    version := "1.0.1",
+    name := "forex-mtl",
+    version := "1.1.0",
     scalaVersion := "2.12.10",
-    addCompilerPlugin(Libraries.kindProjector)
-  ).settings(
-    // Project dependencies
+  )
+  // Docker build settings
+  .enablePlugins(DockerPlugin, AshScriptPlugin)
+  .settings(
+    dockerBaseImage := "openjdk:8-alpine",
+    dockerExposedPorts := Seq(8080),
+    dockerEnvVars := Map("API_PORT" -> "8080"),
+    dockerUpdateLatest := true
+  )
+  // Project dependencies
+  .settings(
+    addCompilerPlugin(Libraries.kindProjector),
     libraryDependencies ++= Seq(
       Libraries.cats,
       Libraries.catsEffect,
@@ -52,8 +62,9 @@ val forex = (project in file("."))
       Libraries.slf4j,
       Libraries.airframeLog
     )
-  ).settings(
-    // Test dependencies
+  )
+  // Test dependencies
+  .settings(
     libraryDependencies ++= Seq(
       Libraries.scalaTest,
       Libraries.scalaCheck,

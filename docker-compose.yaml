@@ -1,5 +1,15 @@
 version: "3.6"
 services:
+  forexmtl:
+    image: "forex-mtl:latest"
+    depends_on:
+      - oneframe
+    ports:
+      - "8080:8080"
+    environment:
+      - ONEFRAME_API_URL=http://oneframe:8080/rates
+      - ONEFRAME_API_ACCESS_TOKEN
+      - CACHE_REFRESH_INTERVAL=10 seconds
   oneframe:
     image: "paidyinc/one-frame:v0.1"
     ports:
