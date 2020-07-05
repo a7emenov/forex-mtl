@@ -12,7 +12,8 @@ object Dependencies {
     val enumeratum          = "1.6.1"
 
     val kindProjector       = "0.9.10"
-    val logback             = "1.2.3"
+    val slf4j               = "1.7.21"
+    val airframeLog         = "20.6.2"
     val scalaCheck          = "1.14.3"
     val scalaTest           = "3.1.0"
     val catsScalaCheck      = "0.2.0"
@@ -42,8 +43,10 @@ object Dependencies {
     // Compiler plugins
     lazy val kindProjector       = "org.spire-math"        %% "kind-projector"             % Versions.kindProjector
 
-    // Runtime
-    lazy val logback             = "ch.qos.logback"        %  "logback-classic"            % Versions.logback
+    // Logging
+    // See https://wvlet.org/airframe/docs/airframe-log#using-with-slf4j for using airframe with slf4j.
+    lazy val slf4j               =  "org.slf4j"            % "slf4j-jdk14"                 % Versions.slf4j
+    lazy val airframeLog         =  "org.wvlet.airframe"   %% "airframe-log"               % Versions.airframeLog
 
     // Test
     lazy val scalaTest           = "org.scalatest"         %% "scalatest"                  % Versions.scalaTest

@@ -49,7 +49,8 @@ val forex = (project in file("."))
       Libraries.circeJava8,
       Libraries.pureConfig,
       Libraries.enumeratum,
-      Libraries.logback
+      Libraries.slf4j,
+      Libraries.airframeLog
     )
   ).settings(
     // Test dependencies

@@ -10,5 +10,5 @@ object Modules {
 
   def oneFrame[F[_]: Concurrent : Timer](config: RatesConfig,
                                          httpClient: Client[F]): F[RatesService[F]] =
-    OneFrameModule.create(config, httpClient).widen
+    OneFrameRatesModule.create(config, httpClient).widen
 }

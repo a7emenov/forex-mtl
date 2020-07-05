@@ -29,6 +29,7 @@ class ApiModule[F[_]: ConcurrentEffect: Timer](config: ApiConfig,
   private val httpApp: HttpApp[F] = appMiddleware(routesMiddleware(http).orNotFound)
 
   val startServer: fs2.Stream[F, ExitCode] = BlazeServerBuilder[F]
+    .withoutBanner
     .bindHttp(config.port, config.host)
     .withHttpApp(httpApp)
     .serve
