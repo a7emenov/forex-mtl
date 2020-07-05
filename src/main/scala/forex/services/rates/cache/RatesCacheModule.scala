@@ -12,7 +12,7 @@ object RatesCacheModule {
 }
 
 private[rates] class RatesCacheModule[F[_]: Sync](ref: Ref[F, Map[Rate.Currencies, Rate]])
-  extends RatesCacheAlgebra[F]{
+    extends RatesCacheAlgebra[F] {
 
   def get(currencies: Rate.Currencies): F[Option[Rate]] =
     ref.get.map(_.get(currencies))

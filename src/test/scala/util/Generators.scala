@@ -1,8 +1,8 @@
 package util
 
-import java.time.{OffsetDateTime, ZoneOffset}
+import java.time.{ OffsetDateTime, ZoneOffset }
 
-import forex.domain.{Currency, Price, Rate, Timestamp}
+import forex.domain.{ Currency, Price, Rate, Timestamp }
 import org.scalacheck.Gen
 
 object Generators {
@@ -11,10 +11,12 @@ object Generators {
     Gen.oneOf(Currency.values)
 
   val price: Gen[Price] =
-    Gen.frequency(
-      (99, Gen.posNum[Double]),
-      (0, Gen.const[Double](0))
-    ).map(v => Price(BigDecimal(v)))
+    Gen
+      .frequency(
+        (99, Gen.posNum[Double]),
+        (0, Gen.const[Double](0))
+      )
+      .map(v => Price(BigDecimal(v)))
 
   val timestamp: Gen[Timestamp] =
     Gen.calendar

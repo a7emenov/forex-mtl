@@ -2,7 +2,7 @@ package forex.programs.rates
 
 import cats.syntax.show._
 import forex.domain.Rate
-import forex.services.rates.errors.{Error => RatesServiceError}
+import forex.services.rates.errors.{ Error => RatesServiceError }
 
 object errors {
 

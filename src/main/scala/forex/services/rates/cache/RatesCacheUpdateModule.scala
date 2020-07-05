@@ -1,20 +1,20 @@
 package forex.services.rates.cache
 
 import cats.data.NonEmptyList
-import cats.effect.{Concurrent, Sync, Timer}
+import cats.effect.{ Concurrent, Sync, Timer }
 import cats.syntax.applicativeError._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import forex.config.RatesCacheConfig
-import forex.domain.{Currency, Rate}
+import forex.domain.{ Currency, Rate }
 import forex.services.rates.oneframe.OneFrameApiAlgebra
 import wvlet.log.LogSupport
 
-private[rates] class RatesCacheUpdateModule[F[_]: Concurrent : Timer](config: RatesCacheConfig,
-                                                                      cache: RatesCacheAlgebra[F],
-                                                                      oneFrameApi: OneFrameApiAlgebra[F])
-  extends RatesCacheUpdateAlgebra[F]
-  with LogSupport {
+private[rates] class RatesCacheUpdateModule[F[_]: Concurrent: Timer](config: RatesCacheConfig,
+                                                                     cache: RatesCacheAlgebra[F],
+                                                                     oneFrameApi: OneFrameApiAlgebra[F])
+    extends RatesCacheUpdateAlgebra[F]
+    with LogSupport {
 
   private val ratesCombinations = {
     val combinations = for {
@@ -35,16 +35,17 @@ private[rates] class RatesCacheUpdateModule[F[_]: Concurrent : Timer](config: Ra
   }
 
   val runSynchronousUpdates: F[Unit] = {
-    def updates(): F[Unit] = for {
-      _ <- updateCache
-      _ <- Timer[F].sleep(config.refreshInterval)
-      result <- updates()
-    } yield result
+    def updates(): F[Unit] =
+      for {
+        _ <- updateCache
+        _ <- Timer[F].sleep(config.refreshInterval)
+        result <- updates()
+      } yield result
 
     (Sync[F].delay(logger.info("New cache updates process started")) >> updates())
       .handleErrorWith { e =>
         Sync[F].delay(logger.error(s"Cache updates process failed: ${e.getMessage}")) >>
-        runSynchronousUpdates
+          runSynchronousUpdates
       }
   }
 }

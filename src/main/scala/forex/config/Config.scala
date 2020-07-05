@@ -29,7 +29,6 @@ object Config {
   implicit val secretWriter: ConfigWriter[Secret] =
     ConfigWriter[String].contramap(_ => "****")
 
-
   /**
     * @param path the property path inside the default configuration
     */
@@ -37,11 +36,14 @@ object Config {
     Sync[F].delay(ConfigSource.default.at(path).loadOrThrow[ApplicationConfig])
 
   def write(config: ApplicationConfig): String =
-    ConfigWriter[ApplicationConfig].to(config).render(
-      ConfigRenderOptions.defaults()
-        .setFormatted(true)
-        .setJson(true)
-        .setComments(false)
-        .setOriginComments(false)
-    )
+    ConfigWriter[ApplicationConfig]
+      .to(config)
+      .render(
+        ConfigRenderOptions
+          .defaults()
+          .setFormatted(true)
+          .setJson(true)
+          .setComments(false)
+          .setOriginComments(false)
+      )
 }

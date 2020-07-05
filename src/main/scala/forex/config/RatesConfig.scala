@@ -1,4 +1,3 @@
 package forex.config
 
-case class RatesConfig(oneFrameApi: OneFrameApiConfig,
-                       cache: RatesCacheConfig)
+case class RatesConfig(oneFrameApi: OneFrameApiConfig, cache: RatesCacheConfig)

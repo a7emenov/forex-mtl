@@ -4,11 +4,11 @@ package rates
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import forex.programs.RatesProgram
-import forex.programs.rates.errors.{Error => RatesProgramError}
-import forex.programs.rates.{Protocol => RatesProgramProtocol}
+import forex.programs.rates.errors.{ Error => RatesProgramError }
+import forex.programs.rates.{ Protocol => RatesProgramProtocol }
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
-import org.http4s.{HttpRoutes, Response}
+import org.http4s.{ HttpRoutes, Response }
 
 class RatesApi[F[_]: Sync](rates: RatesProgram[F]) extends Http4sDsl[F] {
 
@@ -35,7 +35,7 @@ class RatesApi[F[_]: Sync](rates: RatesProgram[F]) extends Http4sDsl[F] {
 
   private def errorResponse(error: RatesProgramError): F[Response[F]] =
     error match {
-      case e@RatesProgramError.RateNotAvailable(currencies) =>
+      case e @ RatesProgramError.RateNotAvailable(currencies) =>
         NotFound(RateNotFound(currencies.from, currencies.to, e.getMessage))
 
       case _ =>

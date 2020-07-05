@@ -16,8 +16,9 @@ class RatesCacheModuleSpec extends BaseSpec {
     forAll(rateMap) { ratesMap =>
       withCache { cache =>
         cache.update(ratesMap).unsafeRunSync()
-        ratesMap.foreach { case (key, value) =>
-          cache.get(key).unsafeRunSync() shouldBe Some(value)
+        ratesMap.foreach {
+          case (key, value) =>
+            cache.get(key).unsafeRunSync() shouldBe Some(value)
         }
       }
     }
@@ -27,8 +28,9 @@ class RatesCacheModuleSpec extends BaseSpec {
     forAll(rateMap, rateMap) { (ratesMap1, ratesMap2) =>
       withCache { cache =>
         (cache.update(ratesMap1) >> cache.update(ratesMap2)).unsafeRunSync()
-        ratesMap2.foreach { case (key, value) =>
-          cache.get(key).unsafeRunSync() shouldBe Some(value)
+        ratesMap2.foreach {
+          case (key, value) =>
+            cache.get(key).unsafeRunSync() shouldBe Some(value)
         }
       }
     }
@@ -38,8 +40,9 @@ class RatesCacheModuleSpec extends BaseSpec {
     forAll(rateMap, rateMap) { (ratesMap1, ratesMap2) =>
       withCache { cache =>
         (cache.update(ratesMap1) >> cache.update(ratesMap2)).unsafeRunSync()
-        ratesMap1.filterKeys(k => !ratesMap2.contains(k)).foreach { case (key, value) =>
-          cache.get(key).unsafeRunSync() shouldBe Some(value)
+        ratesMap1.filterKeys(k => !ratesMap2.contains(k)).foreach {
+          case (key, value) =>
+            cache.get(key).unsafeRunSync() shouldBe Some(value)
         }
       }
     }

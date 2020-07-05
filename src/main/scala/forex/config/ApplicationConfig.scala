@@ -1,4 +1,3 @@
 package forex.config
 
-case class ApplicationConfig(api: ApiConfig,
-                             rates: RatesConfig)
+case class ApplicationConfig(api: ApiConfig, rates: RatesConfig)

@@ -4,7 +4,7 @@ import cats.effect._
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 import forex.config._
-import wvlet.log.{LogFormatter, LogSupport, Logger}
+import wvlet.log.{ LogFormatter, LogSupport, Logger }
 
 import scala.concurrent.ExecutionContext
 
@@ -33,8 +33,8 @@ class Application[F[_]: ConcurrentEffect: Timer] extends LogSupport {
       _ <- Sync[F].delay(logger.info(Config.write(config)))
       ratesServiceResource = new RatesModule[F](config.rates, httpClientEc).serviceResource
       _ <- ratesServiceResource.use { ratesProgram =>
-        new ApiModule[F](config.api, ratesProgram).startServer.compile.drain
-      }
+            new ApiModule[F](config.api, ratesProgram).startServer.compile.drain
+          }
     } yield ()
 
 }

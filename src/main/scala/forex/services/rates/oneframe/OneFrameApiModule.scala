@@ -7,13 +7,13 @@ import cats.effect.Sync
 import cats.syntax.functor._
 import cats.syntax.show._
 import forex.config.OneFrameApiConfig
-import forex.domain.{Currency, Price, Rate, Timestamp}
+import forex.domain.{ Currency, Price, Rate, Timestamp }
 import forex.services.rates.oneframe.OneFrameApiModule.OneFrameExchangeRate
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.circe.CirceInstances
 import org.http4s.client.Client
-import org.http4s.{EntityDecoder, Header, Headers, Request, Uri}
+import org.http4s.{ EntityDecoder, Header, Headers, Request, Uri }
 
 private[rates] object OneFrameApiModule {
 
@@ -29,16 +29,12 @@ private[rates] object OneFrameApiModule {
   private implicit val oneFrameRateDecoder: Decoder[OneFrameExchangeRate] =
     deriveDecoder[OneFrameExchangeRate]
 
-  private case class OneFrameExchangeRate(from: Currency,
-                                          to: Currency,
-                                          price: BigDecimal,
-                                          time_stamp: OffsetDateTime)
+  private case class OneFrameExchangeRate(from: Currency, to: Currency, price: BigDecimal, time_stamp: OffsetDateTime)
 }
 
-private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig,
-                                                   httpClient: Client[F])
-  extends OneFrameApiAlgebra[F]
-  with CirceInstances {
+private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig, httpClient: Client[F])
+    extends OneFrameApiAlgebra[F]
+    with CirceInstances {
 
   private implicit val entityDecoder: EntityDecoder[F, List[OneFrameExchangeRate]] =
     accumulatingJsonOf
