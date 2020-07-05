@@ -8,7 +8,6 @@ import cats.syntax.functor._
 import forex.config.RatesConfig
 import forex.domain.{Currency, Rate}
 import forex.services.rates.errors.Error.RateNotAvailable
-import org.http4s.circe.CirceInstances
 import org.http4s.client.Client
 
 import scala.concurrent.duration.FiniteDuration
@@ -58,7 +57,7 @@ private[rates] object OneFrameModule {
     } yield module
 }
 
-private[rates] class OneFrameModule[F[_]: Sync](cache: Ref[F, Map[Rate.Currencies, Rate]]) extends Algebra[F] with CirceInstances {
+private[rates] class OneFrameModule[F[_]: Sync](cache: Ref[F, Map[Rate.Currencies, Rate]]) extends Algebra[F] {
 
   override def get(currencies: Rate.Currencies): F[Either[errors.Error, Rate]] =
     for {

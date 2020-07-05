@@ -3,6 +3,7 @@ package forex.programs.rates
 import cats.Functor
 import cats.data.EitherT
 import forex.domain._
+import forex.programs.RatesProgram
 import forex.programs.rates.errors._
 import forex.services.RatesService
 
@@ -14,6 +15,6 @@ class Program[F[_]: Functor](ratesService: RatesService[F]) extends Algebra[F] {
 
 object Program {
 
-  def apply[F[_]: Functor](ratesService: RatesService[F]): Algebra[F] =
+  def apply[F[_]: Functor](ratesService: RatesService[F]): RatesProgram[F] =
     new Program[F](ratesService)
 }
