@@ -38,7 +38,7 @@ private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig,
     config.url.withQueryParam("pair", currencies.map(c => s"${c.from.show}${c.to.show}").toList)
 
   private def request(currencies: NonEmptyList[Rate.Currencies]): Request[F] =
-    Request[F](uri = requestUri(currencies), headers = Headers.of(Header("token", config.accessToken)))
+    Request[F](uri = requestUri(currencies), headers = Headers.of(Header("token", config.accessToken.value)))
 
   def rates(currencies: NonEmptyList[Rate.Currencies]): F[Either[OneFrameApiError, Map[Rate.Currencies, Rate]]] =
     httpClient

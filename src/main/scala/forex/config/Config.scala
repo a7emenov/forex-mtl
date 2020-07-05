@@ -1,11 +1,12 @@
 package forex.config
 
 import cats.effect.Sync
+import com.typesafe.config.ConfigRenderOptions
 import org.http4s.Uri
 import pureconfig.error.CannotConvert
-import pureconfig.{CamelCase, ConfigFieldMapping, ConfigReader, ConfigSource}
 import pureconfig.generic.ProductHint
 import pureconfig.generic.auto._
+import pureconfig._
 
 object Config {
 
@@ -19,6 +20,15 @@ object Config {
   implicit val uriReader: ConfigReader[Uri] =
     ConfigReader[String].emap(s => Uri.fromString(s).left.map(e => CannotConvert(s, "org.http4s.Uri", e.sanitized)))
 
+  implicit val uriWriter: ConfigWriter[Uri] =
+    ConfigWriter[String].contramap(_.renderString)
+
+  implicit val secretReader: ConfigReader[Secret] =
+    ConfigReader[String].map(Secret)
+
+  implicit val secretWriter: ConfigWriter[Secret] =
+    ConfigWriter[String].contramap(_ => "****")
+
 
   /**
     * @param path the property path inside the default configuration
@@ -26,4 +36,12 @@ object Config {
   def load[F[_]: Sync](path: String): F[ApplicationConfig] =
     Sync[F].delay(ConfigSource.default.at(path).loadOrThrow[ApplicationConfig])
 
+  def write(config: ApplicationConfig): String =
+    ConfigWriter[ApplicationConfig].to(config).render(
+      ConfigRenderOptions.defaults()
+        .setFormatted(true)
+        .setJson(true)
+        .setComments(false)
+        .setOriginComments(false)
+    )
 }
