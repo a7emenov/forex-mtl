@@ -6,7 +6,6 @@ object errors {
 
   sealed trait Error
   object Error {
-    final case class OneFrameApiError(message: String) extends Error
     final case class RateNotAvailable(currencies: Rate.Currencies) extends Error
   }
 }

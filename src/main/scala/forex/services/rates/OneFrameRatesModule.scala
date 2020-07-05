@@ -5,7 +5,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import forex.config.RatesConfig
 import forex.domain.Rate
-import forex.services.rates.errors.Error.RateNotAvailable
+import forex.services.rates.errors.Error
 import org.http4s.client.Client
 
 private[rates] object OneFrameRatesModule {
@@ -23,9 +23,9 @@ private[rates] object OneFrameRatesModule {
 
 private[rates] class OneFrameRatesModule[F[_]: Sync](cache: RatesCacheModule[F]) extends Algebra[F] {
 
-  override def get(currencies: Rate.Currencies): F[Either[errors.Error, Rate]] =
+  override def get(currencies: Rate.Currencies): F[Either[Error, Rate]] =
     cache.get(currencies).map {
       case Some(r) => Right(r)
-      case None => Left(RateNotAvailable(currencies))
+      case None => Left(Error.RateNotAvailable(currencies))
     }
 }

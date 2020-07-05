@@ -4,13 +4,11 @@ import java.time.OffsetDateTime
 
 import cats.data.NonEmptyList
 import cats.effect.Sync
-import cats.syntax.applicativeError._
 import cats.syntax.functor._
 import cats.syntax.show._
 import forex.config.OneFrameApiConfig
 import forex.domain.{Currency, Price, Rate, Timestamp}
 import forex.services.rates.OneFrameApiModule.OneFrameExchangeRate
-import forex.services.rates.errors.Error.OneFrameApiError
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.circe.CirceInstances
@@ -40,11 +38,11 @@ private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig,
   private def request(currencies: NonEmptyList[Rate.Currencies]): Request[F] =
     Request[F](uri = requestUri(currencies), headers = Headers.of(Header("token", config.accessToken.value)))
 
-  def rates(currencies: NonEmptyList[Rate.Currencies]): F[Either[OneFrameApiError, Map[Rate.Currencies, Rate]]] =
+  def getRates(currencies: NonEmptyList[Rate.Currencies]): F[Map[Rate.Currencies, Rate]] =
     httpClient
       .expect[List[OneFrameExchangeRate]](request(currencies))
-      .map[Either[OneFrameApiError, Map[Rate.Currencies, Rate]]] { rates =>
-        val result = rates.map { rate =>
+      .map { rates =>
+        rates.map { rate =>
           val from = Currency.namesToValuesMap(rate.from)
           val to = Currency.namesToValuesMap(rate.to)
           val price = Price(BigDecimal(rate.price))
@@ -52,7 +50,5 @@ private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig,
           val currencies = Rate.Currencies(from, to)
           currencies -> Rate(currencies, price, timestamp)
         }.toMap
-        Right(result)
       }
-      .handleError(e => Left(OneFrameApiError(e.getMessage)))
 }

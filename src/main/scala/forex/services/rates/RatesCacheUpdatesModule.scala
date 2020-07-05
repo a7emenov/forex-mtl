@@ -20,18 +20,15 @@ private[rates] class RatesCacheUpdatesModule[F[_]: Concurrent : Timer](config: R
     NonEmptyList.fromListUnsafe(combinations.toList)
   }
 
-  private val updateCache: F[Unit] =
-    for {
-      rates <- oneFrameApi.rates(ratesCombinations)
-      result <- rates match {
-        case Right(rs) =>
-          Sync[F].delay(logger.info("Cache updated")) >>
-          cache.update(rs)
-
-        case Left(e) =>
-          Sync[F].delay(logger.error(s"Cache update failed: ${e.message}"))
-      }
+  private val updateCache: F[Unit] = {
+    val update = for {
+      rates <- oneFrameApi.getRates(ratesCombinations)
+      _ <- Sync[F].delay(logger.info("Cache updated"))
+      result <- cache.update(rates)
     } yield result
+
+    update.handleErrorWith(e => Sync[F].delay(logger.error(s"Cache update failed: ${e.getMessage}")))
+  }
 
   val runSynchronousUpdates: F[Unit] = {
     def updates(): F[Unit] = for {

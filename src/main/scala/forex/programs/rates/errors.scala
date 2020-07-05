@@ -8,10 +8,6 @@ object errors {
 
   sealed trait Error extends Exception
   object Error {
-    final case class RateLookupFailed(message: String) extends Error {
-      override def getMessage: String = message
-    }
-
     final case class RateNotAvailable(currencies: Rate.Currencies) extends Error {
       override def getMessage: String =
         s"Rate is not available for currencies: ${currencies.from.show} to ${currencies.to.show}"
@@ -19,9 +15,6 @@ object errors {
   }
 
   def toProgramError(error: RatesServiceError): Error = error match {
-    case RatesServiceError.OneFrameApiError(msg) =>
-      Error.RateLookupFailed(msg)
-
     case RatesServiceError.RateNotAvailable(currencies) =>
       Error.RateNotAvailable(currencies)
   }
