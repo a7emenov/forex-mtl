@@ -8,8 +8,8 @@ object Converters {
   private[rates] implicit class GetApiResponseOps(val rate: Rate) extends AnyVal {
     def asGetApiResponse: GetApiResponse =
       GetApiResponse(
-        from = rate.from,
-        to = rate.to,
+        from = rate.currencies.from,
+        to = rate.currencies.to,
         price = rate.price,
         timestamp = rate.timestamp
       )

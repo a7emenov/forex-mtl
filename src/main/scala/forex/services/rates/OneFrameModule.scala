@@ -1,55 +1,72 @@
 package forex.services.rates
 
-import java.time.OffsetDateTime
-
+import cats.data.NonEmptyList
 import cats.effect._
+import cats.effect.concurrent.Ref
+import cats.syntax.flatMap._
 import cats.syntax.functor._
-import cats.syntax.show._
 import forex.config.OneFrameConfig
-import forex.domain.{Currency, Price, Rate, Timestamp}
-import forex.services.rates.OneFrameModule.OneFrameExchangeRate
-import forex.services.rates.errors.Error.OneFrameLookupFailed
-import io.circe._
-import io.circe.generic.semiauto._
+import forex.domain.{Currency, Rate}
+import forex.services.rates.errors.Error.RateNotAvailable
 import org.http4s.circe.CirceInstances
 import org.http4s.client.Client
-import org.http4s.{EntityDecoder, Header, Headers, Request, Uri}
-import cats.syntax.applicativeError._
+
+import scala.concurrent.duration.FiniteDuration
 
 private[rates] object OneFrameModule {
 
-  private implicit val oneFrameExchangeRateDecoder: Decoder[OneFrameExchangeRate] =
-    deriveDecoder[OneFrameExchangeRate]
+  private val ratesCombinations = {
+    val combinations = for {
+      from <- Currency.values
+      to <- Currency.values if from != to
+    } yield Rate.Currencies(from, to)
+    NonEmptyList.fromListUnsafe(combinations.toList)
+  }
 
-  private case class OneFrameExchangeRate(from: String,
-                                          to: String,
-                                          price: Double,
-                                          time_stamp: String)
+  private def updateCache[F[_]: Sync](cache: Ref[F, Map[Rate.Currencies, Rate]],
+                                      oneFrameApi: OneFrameApi[F]): F[Unit] = {
+    // todo: logging
+    for {
+      rates <- oneFrameApi.rates(ratesCombinations)
+      result <- rates match {
+        case Right(rs) =>
+          cache.set(rs)
+
+        case Left(e) =>
+          Sync[F].unit
+      }
+    } yield result
+  }
+
+  private def synchronousCacheUpdates[F[_]: Sync : Timer](cache: Ref[F, Map[Rate.Currencies, Rate]],
+                                                          oneFrameApi: OneFrameApi[F],
+                                                          queryInterval: FiniteDuration): F[Unit] = {
+    for {
+      _ <- updateCache(cache, oneFrameApi)
+      _ <- Timer[F].sleep(queryInterval)
+      result <- synchronousCacheUpdates(cache, oneFrameApi, queryInterval)
+    } yield result
+  }
+
+  def create[F[_]: Concurrent : Timer](config: OneFrameConfig,
+                                       httpClient: Client[F]): F[OneFrameModule[F]] =
+    for {
+      cache <- Ref.of(Map.empty[Rate.Currencies, Rate])
+      oneFrameApi = new OneFrameApi[F](config, httpClient)
+      _ <- Concurrent[F].start(synchronousCacheUpdates(cache, oneFrameApi, config.queryInterval))
+      module = new OneFrameModule(config, cache)
+    } yield module
 }
 
 private[rates] class OneFrameModule[F[_]: Sync](config: OneFrameConfig,
-                                                httpClient: Client[F]) extends Algebra[F] with CirceInstances {
+                                                cache: Ref[F, Map[Rate.Currencies, Rate]]) extends Algebra[F] with CirceInstances {
 
-  private implicit val entityDecoder: EntityDecoder[F, List[OneFrameExchangeRate]] =
-    accumulatingJsonOf
-
-  private val baseUrl = Uri.unsafeFromString(config.url.toExternalForm)
-
-  private def requestUri(from: Currency, to: Currency): Uri =
-    baseUrl.withQueryParam("pair", s"${from.show}${to.show}")
-
-  private def request(from: Currency, to: Currency): Request[F] =
-    Request[F](uri = requestUri(from, to), headers = Headers.of(Header("token", config.accessToken)))
-
-  override def get(from: Currency, to: Currency): F[Either[errors.Error, Rate]] =
-    httpClient
-      .expect[List[OneFrameExchangeRate]](request(from, to))
-      .map[Either[errors.Error, Rate]] {
-        case head :: Nil =>
-          Right(Rate(from, to, Price(BigDecimal(head.price)), Timestamp(OffsetDateTime.parse(head.time_stamp))))
-
-        case ls =>
-          Left(OneFrameLookupFailed(s"Invalid response: expected 1 entry, got ${ls.length}"))
-      }
-      .handleError(e => Left(OneFrameLookupFailed(e.getMessage)))
+  override def get(currencies: Rate.Currencies): F[Either[errors.Error, Rate]] =
+    for {
+      cacheSnapshot <- cache.get
+      result = cacheSnapshot.get(currencies)
+    } yield result match {
+      case Some(r) => Right(r)
+      case None => Left(RateNotAvailable(currencies))
+    }
 }

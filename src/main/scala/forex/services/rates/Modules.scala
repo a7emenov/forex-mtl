@@ -1,13 +1,14 @@
 package forex.services.rates
 
-import cats.effect.Sync
+import cats.effect.{Concurrent, Timer}
+import cats.syntax.functor._
 import forex.config.OneFrameConfig
 import forex.services.rates
 import org.http4s.client.Client
 
 object Modules {
 
-  def oneFrame[F[_]: Sync](config: OneFrameConfig,
-                           client: Client[F]): rates.Algebra[F] =
-    new OneFrameModule[F](config, client)
+  def oneFrame[F[_]: Concurrent : Timer](config: OneFrameConfig,
+                                         httpClient: Client[F]): F[rates.Algebra[F]] =
+    OneFrameModule.create(config, httpClient).widen
 }

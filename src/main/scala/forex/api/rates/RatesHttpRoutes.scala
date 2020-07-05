@@ -4,21 +4,28 @@ package rates
 import cats.effect.Sync
 import cats.syntax.flatMap._
 import forex.programs.RatesProgram
-import forex.programs.rates.{ Protocol => RatesProgramProtocol }
-import org.http4s.HttpRoutes
+import forex.programs.rates.errors.{Error => RatesProgramError}
+import forex.programs.rates.{Protocol => RatesProgramProtocol}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
+import org.http4s.{HttpRoutes, Response}
 
 class RatesHttpRoutes[F[_]: Sync](rates: RatesProgram[F]) extends Http4sDsl[F] {
 
-  import Converters._, QueryParams._, Protocol._
+  import Converters._
+  import Protocol._
+  import QueryParams._
 
   private[api] val prefixPath = "/rates"
 
   private val httpRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root :? FromQueryParam(from) +& ToQueryParam(to) =>
-      rates.get(RatesProgramProtocol.GetRatesRequest(from, to)).flatMap(Sync[F].fromEither).flatMap { rate =>
-        Ok(rate.asGetApiResponse)
+      rates.get(RatesProgramProtocol.GetRatesRequest(from, to)).flatMap {
+        case Right(rate) =>
+          Ok(rate.asGetApiResponse)
+
+        case Left(error) =>
+          errorResponse(error)
       }
   }
 
@@ -26,4 +33,12 @@ class RatesHttpRoutes[F[_]: Sync](rates: RatesProgram[F]) extends Http4sDsl[F] {
     prefixPath -> httpRoutes
   )
 
+  private def errorResponse(error: RatesProgramError): F[Response[F]] =
+    error match {
+      case e@RatesProgramError.RateNotAvailable(currencies) =>
+        NotFound(RateNotFound(currencies.from, currencies.to, e.getMessage))
+
+      case _ =>
+        InternalServerError()
+    }
 }
