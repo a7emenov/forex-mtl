@@ -1,20 +1,13 @@
 package forex.services.rates
 
 import cats.effect.IO
-import forex.domain.Rate
-import org.scalacheck.Gen
-import util.Generators._
+import cats.effect.concurrent.Ref
 import cats.syntax.flatMap._
+import forex.domain.Rate
+import forex.services.rates.cache.RatesCacheModule
+import util.Generators._
 
 class RatesCacheModuleSpec extends BaseSpec {
-
-  private def withCache(testCode: RatesCacheModule[IO] => Any): Any = {
-    val cache = RatesCacheModule.empty[IO].unsafeRunSync()
-    testCode(cache)
-  }
-
-  val rateMap: Gen[Map[Rate.Currencies, Rate]] =
-    Gen.nonEmptyMap(rate.map(r => r.currencies -> r))
 
   behavior of "Rates cache"
 
@@ -49,5 +42,21 @@ class RatesCacheModuleSpec extends BaseSpec {
         }
       }
     }
+  }
+
+  it should "return None for missing values" in {
+    forAll(rateMap, rateMap) { (ratesMap1, ratesMap2) =>
+      withCache { cache =>
+        cache.update(ratesMap1).unsafeRunSync()
+        ratesMap2.keys.filterNot(ratesMap1.contains).foreach { key =>
+          cache.get(key).unsafeRunSync() shouldBe None
+        }
+      }
+    }
+  }
+
+  private def withCache(testCode: RatesCacheModule[IO] => Any): Any = {
+    val cache = Ref.of[IO, Map[Rate.Currencies, Rate]](Map.empty).unsafeRunSync()
+    testCode(new RatesCacheModule[IO](cache))
   }
 }

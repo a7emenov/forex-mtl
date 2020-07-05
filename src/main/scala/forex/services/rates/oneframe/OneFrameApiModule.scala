@@ -1,4 +1,4 @@
-package forex.services.rates
+package forex.services.rates.oneframe
 
 import java.time.OffsetDateTime
 
@@ -8,7 +8,7 @@ import cats.syntax.functor._
 import cats.syntax.show._
 import forex.config.OneFrameApiConfig
 import forex.domain.{Currency, Price, Rate, Timestamp}
-import forex.services.rates.OneFrameApiModule.OneFrameExchangeRate
+import forex.services.rates.oneframe.OneFrameApiModule.OneFrameExchangeRate
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.circe.CirceInstances
@@ -36,7 +36,9 @@ private[rates] object OneFrameApiModule {
 }
 
 private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig,
-                                                   httpClient: Client[F]) extends CirceInstances {
+                                                   httpClient: Client[F])
+  extends OneFrameApiAlgebra[F]
+  with CirceInstances {
 
   private implicit val entityDecoder: EntityDecoder[F, List[OneFrameExchangeRate]] =
     accumulatingJsonOf

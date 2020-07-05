@@ -33,4 +33,6 @@ object Generators {
       timestamp <- timestamp
     } yield Rate(currencies, price, timestamp)
 
+  val rateMap: Gen[Map[Rate.Currencies, Rate]] =
+    Gen.nonEmptyMap(rate.map(r => r.currencies -> r))
 }

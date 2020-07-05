@@ -1,4 +1,4 @@
-package forex.services.rates
+package forex.services.rates.cache
 
 import cats.effect.Sync
 import cats.effect.concurrent.Ref
@@ -7,11 +7,12 @@ import forex.domain.Rate
 
 object RatesCacheModule {
 
-  def empty[F[_]: Sync]: F[RatesCacheModule[F]] =
+  def empty[F[_]: Sync]: F[RatesCacheAlgebra[F]] =
     Ref.of(Map.empty[Rate.Currencies, Rate]).map(new RatesCacheModule(_))
 }
 
-private[rates] class RatesCacheModule[F[_]: Sync] private (ref: Ref[F, Map[Rate.Currencies, Rate]]) {
+private[rates] class RatesCacheModule[F[_]: Sync](ref: Ref[F, Map[Rate.Currencies, Rate]])
+  extends RatesCacheAlgebra[F]{
 
   def get(currencies: Rate.Currencies): F[Option[Rate]] =
     ref.get.map(_.get(currencies))

@@ -5,7 +5,9 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import forex.config.RatesConfig
 import forex.domain.Rate
+import forex.services.rates.cache.{RatesCacheAlgebra, RatesCacheModule, RatesCacheUpdateModule}
 import forex.services.rates.errors.Error
+import forex.services.rates.oneframe.OneFrameApiModule
 import org.http4s.client.Client
 
 private[rates] object OneFrameRatesModule {
@@ -15,13 +17,13 @@ private[rates] object OneFrameRatesModule {
     for {
       cache <- RatesCacheModule.empty[F]
       oneFrameApi = new OneFrameApiModule[F](config.oneFrameApi, httpClient)
-      cacheUpdates = new RatesCacheUpdatesModule[F](config.cache, cache, oneFrameApi)
+      cacheUpdates = new RatesCacheUpdateModule[F](config.cache, cache, oneFrameApi)
       _ <- Concurrent[F].start(cacheUpdates.runSynchronousUpdates)
       module = new OneFrameRatesModule(cache)
     } yield module
 }
 
-private[rates] class OneFrameRatesModule[F[_]: Sync](cache: RatesCacheModule[F]) extends Algebra[F] {
+private[rates] class OneFrameRatesModule[F[_]: Sync](cache: RatesCacheAlgebra[F]) extends Algebra[F] {
 
   override def get(currencies: Rate.Currencies): F[Either[Error, Rate]] =
     cache.get(currencies).map {
