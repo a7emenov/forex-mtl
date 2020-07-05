@@ -17,7 +17,7 @@ import org.http4s.{EntityDecoder, Header, Headers, Request, Uri}
 
 private[rates] object OneFrameApiModule {
 
-  implicit val currencyDecoder: Decoder[Currency] =
+  private implicit val currencyDecoder: Decoder[Currency] =
     Decoder[String].emap {
       case s if Currency.namesToValuesMap.contains(s) =>
         Right(Currency.namesToValuesMap(s))
@@ -26,7 +26,7 @@ private[rates] object OneFrameApiModule {
         Left(s"Not a valid currency value: $s")
     }
 
-  implicit val oneFrameRateDecoder: Decoder[OneFrameExchangeRate] =
+  private implicit val oneFrameRateDecoder: Decoder[OneFrameExchangeRate] =
     deriveDecoder[OneFrameExchangeRate]
 
   private case class OneFrameExchangeRate(from: Currency,

@@ -14,9 +14,10 @@ object Dependencies {
     val kindProjector       = "0.9.10"
     val slf4j               = "1.7.21"
     val airframeLog         = "20.6.2"
-    val scalaCheck          = "1.14.3"
     val scalaTest           = "3.1.0"
-    val catsScalaCheck      = "0.2.0"
+    val scalaTestPlus       = "3.2.0.0"
+    // Check scalatest-plus dependency before updating.
+    val scalaCheck          = "1.14.3"
   }
 
   object Libraries {
@@ -50,8 +51,8 @@ object Dependencies {
 
     // Test
     lazy val scalaTest           = "org.scalatest"         %% "scalatest"                  % Versions.scalaTest
+    lazy val scalaTestPlus       = "org.scalatestplus"     %% "scalacheck-1-14"            % Versions.scalaTestPlus
     lazy val scalaCheck          = "org.scalacheck"        %% "scalacheck"                 % Versions.scalaCheck
-    lazy val catsScalaCheck      = "io.chrisdavenport"     %% "cats-scalacheck"            % Versions.catsScalaCheck
   }
 
 }

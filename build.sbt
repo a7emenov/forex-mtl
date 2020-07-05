@@ -18,6 +18,7 @@ ThisBuild / scalacOptions ++= Seq(
   "-Xlint",
   "-Ydelambdafy:method",
   "-Xlog-reflective-calls",
+  "-Ywarn-macros:after",
   "-Yno-adapted-args",
   "-Ypartial-unification",
   "-Ywarn-dead-code",
@@ -67,7 +68,7 @@ val forex = (project in file("."))
   .settings(
     libraryDependencies ++= Seq(
       Libraries.scalaTest,
-      Libraries.scalaCheck,
-      Libraries.catsScalaCheck
+      Libraries.scalaTestPlus,
+      Libraries.scalaCheck
     ).map(_ % Test)
   )
