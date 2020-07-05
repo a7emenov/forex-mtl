@@ -17,13 +17,22 @@ import org.http4s.{EntityDecoder, Header, Headers, Request, Uri}
 
 private[rates] object OneFrameApiModule {
 
-  private implicit val oneFrameExchangeRateDecoder: Decoder[OneFrameExchangeRate] =
+  implicit val currencyDecoder: Decoder[Currency] =
+    Decoder[String].emap {
+      case s if Currency.namesToValuesMap.contains(s) =>
+        Right(Currency.namesToValuesMap(s))
+
+      case s =>
+        Left(s"Not a valid currency value: $s")
+    }
+
+  implicit val oneFrameRateDecoder: Decoder[OneFrameExchangeRate] =
     deriveDecoder[OneFrameExchangeRate]
 
-  private case class OneFrameExchangeRate(from: String,
-                                          to: String,
-                                          price: Double,
-                                          time_stamp: String)
+  private case class OneFrameExchangeRate(from: Currency,
+                                          to: Currency,
+                                          price: BigDecimal,
+                                          time_stamp: OffsetDateTime)
 }
 
 private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig,
@@ -43,12 +52,8 @@ private[rates] class OneFrameApiModule[F[_]: Sync](config: OneFrameApiConfig,
       .expect[List[OneFrameExchangeRate]](request(currencies))
       .map { rates =>
         rates.map { rate =>
-          val from = Currency.namesToValuesMap(rate.from)
-          val to = Currency.namesToValuesMap(rate.to)
-          val price = Price(BigDecimal(rate.price))
-          val timestamp = Timestamp(OffsetDateTime.parse(rate.time_stamp))
-          val currencies = Rate.Currencies(from, to)
-          currencies -> Rate(currencies, price, timestamp)
+          val currencies = Rate.Currencies(rate.from, rate.to)
+          currencies -> Rate(currencies, Price(rate.price), Timestamp(rate.time_stamp))
         }.toMap
       }
 }
