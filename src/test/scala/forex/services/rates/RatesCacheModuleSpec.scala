@@ -3,6 +3,7 @@ package forex.services.rates
 import cats.effect.IO
 import cats.effect.concurrent.Ref
 import cats.syntax.flatMap._
+import forex.BaseSpec
 import forex.domain.Rate
 import forex.services.rates.cache.RatesCacheModule
 import util.Generators._

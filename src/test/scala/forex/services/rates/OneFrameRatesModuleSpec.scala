@@ -1,6 +1,7 @@
 package forex.services.rates
 
 import cats.effect.IO
+import forex.BaseSpec
 import forex.domain.Rate
 import forex.services.rates.cache.RatesCacheAlgebra
 import forex.services.rates.errors.Error.RateNotAvailable

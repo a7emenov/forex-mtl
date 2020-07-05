@@ -1,7 +1,7 @@
 package forex
 
 import cats.effect.{ConcurrentEffect, ExitCode, Timer}
-import forex.api.rates.RatesHttpRoutes
+import forex.api.rates.RatesApi
 import forex.config.ApiConfig
 import forex.programs._
 import org.http4s._
@@ -22,7 +22,7 @@ class ApiModule[F[_]: ConcurrentEffect: Timer](config: ApiConfig,
   private val appMiddleware: TotalMiddleware =
   { http => Timeout(config.timeout)(http) }
 
-  private val ratesHttpRoutes: HttpRoutes[F] = new RatesHttpRoutes[F](ratesProgram).routes
+  private val ratesHttpRoutes: HttpRoutes[F] = new RatesApi[F](ratesProgram).routes
 
   private val http: HttpRoutes[F] = ratesHttpRoutes
 

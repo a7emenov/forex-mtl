@@ -1,4 +1,4 @@
-package forex.services.rates
+package forex
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
